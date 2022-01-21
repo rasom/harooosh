@@ -1,0 +1,244 @@
+{:youtube-link nil,
+ :offsets
+ {:offset1 nil,
+  :offset2 nil,
+  :offset3 nil,
+  :battery-chage1 nil,
+  :battery-change2 nil},
+ :started-at 1640504588368,
+ :goals
+ ({:event :goal-scored,
+   :time 1640505819998,
+   :data {:team :white},
+   :time-diff 1231630,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640505831350,
+   :data {:team :white},
+   :time-diff 1242982,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640505958091,
+   :data {:team :white},
+   :time-diff 1369723,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640506060014,
+   :data {:team :white},
+   :time-diff 1471646,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640506791336,
+   :data {:team :yellow},
+   :time-diff 2202968,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640506937181,
+   :data {:team :yellow},
+   :time-diff 2348813,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640507189393,
+   :data {:team :white},
+   :time-diff 2601025,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640507749571,
+   :data {:team :white},
+   :time-diff 3161203,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640507821534,
+   :data {:team :red},
+   :time-diff 3233166,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640508581323,
+   :data {:team :white},
+   :time-diff 3992955,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640508856565,
+   :data {:team :white},
+   :time-diff 4268197,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640509305709,
+   :data {:team :white},
+   :time-diff 4717341,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640509471088,
+   :data {:team :white},
+   :time-diff 4882720,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640509532757,
+   :data {:team :red},
+   :time-diff 4944389,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640509811909,
+   :data {:team :red},
+   :time-diff 5223541,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640510061735,
+   :data {:team :yellow},
+   :time-diff 5473367,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640510173758,
+   :data {:team :red},
+   :time-diff 5585390,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640510327370,
+   :data {:team :white},
+   :time-diff 5739002,
+   :details ""}
+  {:event :goal-scored,
+   :time 1640510472914,
+   :data {:team :white},
+   :time-diff 5884546,
+   :details ""}),
+ :results
+ {:yellow {:p 9, :w 1, :d 5, :l 5, :gf 3, :ga 9, :gd -6},
+  :red {:p 10, :w 1, :d 7, :l 3, :gf 4, :ga 7, :gd -3},
+  :white {:p 25, :w 7, :d 4, :l 1, :gf 12, :ga 3, :gd 9}},
+ :matches
+ ({:id 0,
+   :team1 :yellow,
+   :team2 :white,
+   :team1-score 0,
+   :team2-score 0,
+   :winner :yellow,
+   :ended? true}
+  {:id 1,
+   :team1 :yellow,
+   :team2 :red,
+   :team1-score 0,
+   :team2-score 0,
+   :ended? true}
+  {:id 2,
+   :team1 :red,
+   :team2 :white,
+   :team1-score 0,
+   :team2-score 2,
+   :goals
+   [{:team :white, :timestamp 1640505819998}
+    {:team :white, :timestamp 1640505831350}],
+   :ended? true}
+  {:id 3,
+   :team1 :white,
+   :team2 :yellow,
+   :team1-score 2,
+   :team2-score 0,
+   :goals
+   [{:team :white, :timestamp 1640505958090}
+    {:team :white, :timestamp 1640506060014}],
+   :ended? true}
+  {:id 4,
+   :team1 :white,
+   :team2 :red,
+   :team1-score 0,
+   :team2-score 0,
+   :ended? true}
+  {:id 5,
+   :team1 :red,
+   :team2 :yellow,
+   :team1-score 0,
+   :team2-score 2,
+   :goals
+   [{:team :yellow, :timestamp 1640506791336}
+    {:team :yellow, :timestamp 1640506937181}],
+   :ended? true}
+  {:id 6,
+   :team1 :yellow,
+   :team2 :white,
+   :team1-score 0,
+   :team2-score 1,
+   :goals [{:team :white, :timestamp 1640507189393}],
+   :ended? true}
+  {:id 7,
+   :team1 :white,
+   :team2 :red,
+   :team1-score 1,
+   :team2-score 1,
+   :goals
+   [{:team :white, :timestamp 1640507749571}
+    {:team :red, :timestamp 1640507821534}],
+   :ended? true}
+  {:id 8,
+   :team1 :red,
+   :team2 :yellow,
+   :team1-score 0,
+   :team2-score 0,
+   :ended? true}
+  {:id 9,
+   :team1 :yellow,
+   :team2 :white,
+   :team1-score 0,
+   :team2-score 1,
+   :goals [{:team :white, :timestamp 1640508581323}],
+   :ended? true}
+  {:id 10,
+   :team1 :white,
+   :team2 :red,
+   :team1-score 1,
+   :team2-score 0,
+   :goals [{:team :white, :timestamp 1640508856565}],
+   :ended? true}
+  {:id 11,
+   :team1 :white,
+   :team2 :yellow,
+   :team1-score 2,
+   :team2-score 0,
+   :goals
+   [{:team :white, :timestamp 1640509305709}
+    {:team :white, :timestamp 1640509471088}],
+   :ended? true}
+  {:id 12,
+   :team1 :white,
+   :team2 :red,
+   :team1-score 0,
+   :team2-score 2,
+   :goals
+   [{:team :red, :timestamp 1640509532757}
+    {:team :red, :timestamp 1640509811908}],
+   :ended? true}
+  {:id 13,
+   :team1 :red,
+   :team2 :yellow,
+   :team1-score 1,
+   :team2-score 1,
+   :goals
+   [{:team :yellow, :timestamp 1640510061735}
+    {:team :red, :timestamp 1640510173758}],
+   :ended? true}
+  {:id 14,
+   :team1 :yellow,
+   :team2 :white,
+   :team1-score 0,
+   :team2-score 2,
+   :goals
+   [{:team :white, :timestamp 1640510327370}
+    {:team :white, :timestamp 1640510472913}],
+   :ended? true}
+  {:id 15,
+   :team1 :white,
+   :team2 :red,
+   :team1-score 0,
+   :team2-score 0,
+   :ended? true}
+  {:id 16,
+   :team1 :red,
+   :team2 :yellow,
+   :team1-score 0,
+   :team2-score 0,
+   :ended? true}
+  {:id 17,
+   :team1 :yellow,
+   :team2 :white,
+   :team1-score 0,
+   :team2-score 0})}
