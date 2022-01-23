@@ -111,7 +111,7 @@
    :offsets      {:offset1         nil
                   :offset2         nil
                   :offset3         nil
-                  :battery-chage1  nil
+                  :battery-change1  nil
                   :battery-change2 nil}
    :started-at   started-at
    :goals        (prepare-goals data)

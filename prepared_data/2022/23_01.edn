@@ -1,9 +1,9 @@
 {:youtube-id "67utiRIOKQ4",
  :offsets
- {:offset1 nil,
-  :offset2 nil,
+ {:offset1 -387,
+  :offset2 -359,
   :offset3 nil,
-  :battery-chage1 nil,
+  :battery-change1 3000,
   :battery-change2 nil},
  :started-at 1642923652315,
  :goals
