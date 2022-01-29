@@ -8,4 +8,5 @@ build-release:
   clj -X harooosh.site/generate-site-cmd ;\
 	shadow-cljs release :app ;\
 	rm -rf docs ;\
-	cp -R public docs;
+	cp -R public docs ;\
+	cp CNAME docs/CNAME
