@@ -7,5 +7,5 @@ build-release:
 	rm -rf public/js/compiled ;\
   clj -X harooosh.site/generate-site-cmd ;\
 	shadow-cljs release :app ;\
-	rm -rf release ;\
-	cp -R public release;
+	rm -rf docs ;\
+	cp -R public docs;
