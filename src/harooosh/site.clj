@@ -57,7 +57,7 @@
     :else
     (->> matches
          vals
-        (filter :ended?)
+         (filter :ended?)
          (reduce
           (fn [acc {:keys [team1 team2 team1-score team2-score]}]
             (-> acc
@@ -171,7 +171,7 @@
       :rel "stylesheet"
       :integrity "sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
       :crossorigin "anonymous"}]
-    [:link {:rel"stylesheet"
+    [:link {:rel "stylesheet"
             :href "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"}]
     [:script {:src "https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
               :integrity "sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
@@ -226,16 +226,16 @@
 
 (defn matches-table [matches]
   [:table.table.table-striped.text-center
-    [:tbody
-     (for [{:keys [id team1 team2 team1-score team2-score]} matches]
-       [:tr
-        [:td (str "#" (inc id))]
-        [:td {:style {:background-color team1}}
-         (get-team team1)]
-        [:td [:p.text-nowrap
-              (str team1-score " : " team2-score)]]
-        [:td {:style {:background-color team2}}
-         (get-team team2)]])]])
+   [:tbody
+    (for [{:keys [id team1 team2 team1-score team2-score]} matches]
+      [:tr
+       [:td (str "#" (inc id))]
+       [:td {:style {:background-color team1}}
+        (get-team team1)]
+       [:td [:p.text-nowrap
+             (str team1-score " : " team2-score)]]
+       [:td {:style {:background-color team2}}
+        (get-team team2)]])]])
 
 (defn game-html
   [{:keys [youtube-id goals results matches started-at offsets]}]
@@ -246,7 +246,7 @@
      [:div.col-sm-12.overflow-auto
       [:h3 "Результат " (dd-mm-year started-at)]
       (results-table results)]
-      [:div.col-sm-7 [:div#player [:h1 "Тут будет видео!"]]]
+     [:div.col-sm-7 [:div#player [:h1 "Тут будет видео!"]]]
      [:div.col-sm-5.overflow-auto
       {:style "max-height: 400;"}
       (goals-table goals offsets)]
@@ -359,7 +359,7 @@
   [[:p-main        {:title         "Основной зачёт (3-2-1)"
                     :value-wrapper (fn [v] [:span.fw-bold (str v)])}]
    [:p             {:title "Сумма очков за все туры"}]
-   [:p-alternative {:title "Aльтернативный зачет (4-2-1)"}]
+   [:p-alternative {:title "Aльтернативный зачёт (4-2-1)"}]
    [:games         {:title "Всего игр"
                     :f     (fn [{:keys [w d l]}] (+ w d l))}]
    [:w             {:title "Победы"}]
@@ -421,14 +421,131 @@
        [:td (dd-mm-year started-at)]
        [:td (result-summary data)]])]])
 
+(defn count-draws [matches]
+  (reduce
+   (fn [acc {:keys [team1-score team2-score]}]
+     (if (= team1-score team2-score)
+       (inc acc)
+       acc))
+   0
+   matches))
+
+(defn count-matches [data]
+  (reduce
+   (fn [acc {:keys [data]}]
+     (let [matches (get data :matches)]
+       (-> acc
+           (update :total + (count matches))
+           (update :draws + (count-draws matches)))))
+   {:total 0
+    :draws 0}
+   data))
+
+(defn round-float
+  ([n]
+   (round-float n 2))
+  ([n precision]
+   (let [base (int (java.lang.Math/pow 10 precision))]
+     (float (/ (java.lang.Math/round (* base (float n))) base)))))
+
+(defn percentage [a b]
+  (round-float (* 100 (/ a b))))
+
+(defn get-total-scored [{:keys [results]}]
+  (reduce
+   (fn [acc [_ {:keys [ga]}]]
+     (+ acc ga))
+   0
+   results))
+
+(defn check-for-best-result [{:keys [best-result] :as acc} total-scored day]
+  (cond (> best-result total-scored)
+        acc
+
+        (= best-result total-scored)
+        (update acc :best-days conj day)
+
+        :else
+        (assoc acc
+               :best-result total-scored
+               :best-days [day])))
+
+(defn check-for-worst-result [{:keys [worst-result] :as acc} total-scored day]
+  (cond (> total-scored worst-result)
+        acc
+
+        (= worst-result total-scored)
+        (update acc :worst-days conj day)
+
+        :else
+        (assoc acc
+               :worst-result total-scored
+               :worst-days [day])))
+
+(defn get-scores-stats [data]
+  (reduce
+   (fn [acc {:keys [data] :as day}]
+     (let [total-scored (get-total-scored data)]
+       (-> acc
+           (update :all-scores conj total-scored)
+           (check-for-best-result total-scored day)
+           (check-for-worst-result total-scored day))))
+   {:best-result 0
+    :worst-result 1000
+    :best-days []
+    :worst-days []
+    :all-scores []}
+   data))
+
+(defn print-days [days]
+  (interpose
+   ","
+   (map (fn [{:keys [started-at file]}]
+          (match-day-link current-season file (dd-mm-year started-at)))
+        days)))
+
+(defn extra-stats-table [data aggregated-results]
+  [:table.table.table-bordered.table-striped
+   (let [total-games                           (count data)
+         {:keys [total draws]}                 (count-matches data)
+         {:keys [all-scores] :as scores-stats} (get-scores-stats data)]
+     [:tbody
+      [:tr
+       [:td "Всего игр"]
+       [:td (str total)]]
+      [:tr
+       [:td "В среднем за тур"]
+       [:td (str (round-float (/ total total-games)))]]
+      [:tr
+       [:td "Всего ничьих"]
+       [:td (str draws " (" (percentage draws total) "%)")]]
+      [:tr
+       [:td "Среднее количество голов за тур"]
+       [:td (round-float (/ (apply + all-scores) total-games))]]
+      [:tr
+       [:td "Самые результативные туры"]
+       [:td (str "забитых голов: "
+                 (get scores-stats :best-result)
+                 ", ")
+        (print-days (get scores-stats :best-days))]]
+      [:tr
+       [:td "Наименее результативные туры"]
+       [:td (str "забитых голов: "
+                 (get scores-stats :worst-result)
+                 ", ")
+        (print-days (get scores-stats :worst-days))]]])])
+
 (defn season-page-html [season data]
   (page
    :home
    [:div.container-fluid
     [:div.row
-     [:div.col-sm-6.overflow-auto
-      [:h3 "Таблица"]
-      (season-table (aggregate-results data))]
+     (let [aggregated-results (aggregate-results data)]
+       [:div.col-sm-6.overflow-auto
+        [:h3 "Таблица (сыграно туров - " (count data) ")"]
+        (season-table aggregated-results)
+        [:h3 "Дополнительная статистика"]
+        (extra-stats-table data aggregated-results)])
      [:div.col-sm-6
       [:h3 "Туры"]
       (match-days-table season data)]]]))
@@ -463,7 +580,7 @@
 
 (defn generate-stats-page []
   (spit "public/game.html"
-         (hiccup/html (stats-page))))
+        (hiccup/html (stats-page))))
 
 (defn generate-stats-list-page []
   (spit "public/list.html"
@@ -481,18 +598,21 @@
   (generate-season-page current-season)
   (update-season current-season))
 
+
 (comment
+  (generate-site-cmd nil)
+
   (generate-game-html {:file "16_01.edn"})
 
   "01 4 51"
   (stats-page)
 
   (generate-stats-page)
-  
+
   (generate-stats-list-page)
-  
+
   (update-season 2022)
-  
+
   (game-html :1)
   (prepare-data-cmd  {:file "16_01.edn"})
 
@@ -504,6 +624,4 @@
 
   (* 1000 (+ 44 (* 18 60)));; => 1124
 
-  (season-data 2022)
-
-)
+  (season-data 2022))
