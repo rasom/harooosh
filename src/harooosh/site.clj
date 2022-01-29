@@ -23,9 +23,10 @@
    :yellow "color: gold"})
 
 (defn get-team [team]
-  [:span [:i.bi
-         {:class (get team-icon team)
-          :style (get team-style team)}]
+  [:span.text-nowrap
+   [:i.bi
+    {:class (get team-icon team)
+     :style (get team-style team)}]
    " " (get teams team)])
 
 (defn dd-mm-year [timestamp]
@@ -354,37 +355,40 @@
                       :w 0, :d 0, :l 0, :gf 0, :ga 0, :gd 0}))
    data))
 
+(def season-table-rows
+  [[:p-main        {:title         "Основной зачёт (3-2-1)"
+                    :value-wrapper (fn [v] [:span.fw-bold (str v)])}]
+   [:p             {:title "Сумма очков за все туры"}]
+   [:p-alternative {:title "Aльтернативный зачет (4-2-1)"}]
+   [:games         {:title "Всего игр"
+                    :f     (fn [{:keys [w d l]}] (+ w d l))}]
+   [:w             {:title "Победы"}]
+   [:d             {:title "Ничьи"}]
+   [:l             {:title "Поражения"}]
+   [:gf            {:title "Забитые"}]
+   [:ga            {:title "Пропущенные"}]
+   [:gd            {:title "Разница голов"}]])
+
 (defn season-table [data]
-  [:table.table.table-bordered
-   [:thead
-    (let [th :th.max-width.overflow-hidden]
+  (let [sorted-teams (sort-by (fn [[_ {:keys [p-main]}]] p-main) > data)
+        teams-keys (map first sorted-teams)]
+    [:table.table.table-bordered.table-striped
+     [:thead
       [:tr
-       [th {:title "Команда"} "Команда"]
-       [th {:title "Зачёт"} "З"]
-       [th {:title "Очки"} "O"]
-       [th {:title "Альтернативный Зачёт"} "АЗ"]
-       [th {:title "Игры"} "И"]
-       [th {:title "Выигрыши"} "В"]
-       [th {:title "Hичьи"} "Н"]
-       [th {:title "Поражения"} "П"]
-       [th {:title "Забитые"} "ЗАБ"]
-       [th {:title "Пропущенные"} "ПРО"]
-       [th {:title "Разница"} "РАЗН"]])]
-   [:tbody
-    (for [[team {:keys [p-main p-alternative p w d l gf ga gd]}]
-          (sort-by (fn [[_ {:keys [p-main]}]] p-main) > data)]
-      [:tr
-       [:td (get-team team)]
-       [:td [:span.fw-bold (str p-main)]]
-       [:td (str p)]
-       [:td (str p-alternative)]
-       [:td (str (+ w d l))]
-       [:td (str w)]
-       [:td (str d)]
-       [:td (str l)]
-       [:td (str gf)]
-       [:td (str ga)]
-       [:td (str gd)]])]])
+       [:th]
+       [:th (get-team (nth teams-keys 0))]
+       [:th (get-team (nth teams-keys 1))]
+       [:th (get-team (nth teams-keys 2))]]]
+     [:tbody
+      (for [[k {:keys [title f value-wrapper]
+                :or {value-wrapper str
+                     f k}}]
+            season-table-rows]
+        [:tr
+         (concat
+          [[:td title]]
+          (for [team teams-keys]
+            [:td (value-wrapper (f (get data team)))]))])]]))
 
 (defn result-summary [{:keys [results]}]
   [:span
@@ -413,7 +417,7 @@
                   [(inc idx) data]))
                (sort-by (fn [[_ {:keys [started-at]}]] started-at) >))]
       [:tr
-       [:td (match-day-link season name (str idx))]
+       [:td (match-day-link season name (str idx " Тур"))]
        [:td (dd-mm-year started-at)]
        [:td (result-summary data)]])]])
 
@@ -422,12 +426,11 @@
    :home
    [:div.container-fluid
     [:div.row
-     [:div.col-sm-12.overflow-auto
+     [:div.col-sm-6.overflow-auto
       [:h3 "Таблица"]
-      (season-table (aggregate-results data))]]
-    [:div.row
+      (season-table (aggregate-results data))]
      [:div.col-sm-6
-      [:h3 "Игровые дни"]
+      [:h3 "Туры"]
       (match-days-table season data)]]]))
 
 (defn season-page [season]
