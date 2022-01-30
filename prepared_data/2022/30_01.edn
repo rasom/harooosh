@@ -1,9 +1,9 @@
 {:youtube-id "d5YEQgeCONM",
  :offsets
- {:offset1 nil,
-  :offset2 nil,
+ {:offset1 -13,
+  :offset2 10,
   :offset3 nil,
-  :battery-change1 nil,
+  :battery-change1 3360,
   :battery-change2 nil},
  :started-at 1643528345475,
  :goals
@@ -11,127 +11,135 @@
    :time 1643528479870,
    :data {:team :red},
    :time-diff 134395,
-   :details ""}
+   :details "Неизвестный солдат"}
   {:event :goal-scored,
    :time 1643528548366,
    :data {:team :yellow},
    :time-diff 202891,
-   :details ""}
+   :details "Тарас"}
   {:event :goal-scored,
    :time 1643528658802,
    :data {:team :red},
    :time-diff 313327,
-   :details ""}
+   :details "Сергей"}
   {:event :goal-scored,
    :time 1643528745535,
    :data {:team :white},
    :time-diff 400060,
-   :details ""}
+   :details "Илья"}
   {:event :goal-scored,
    :time 1643529643165,
    :data {:team :red},
    :time-diff 1297690,
-   :details ""}
+   :details "Сергей"}
   {:event :goal-scored,
    :time 1643529887278,
    :data {:team :yellow},
    :time-diff 1541803,
-   :details ""}
+   :details "Неизвестный солдат"}
   {:event :goal-scored,
    :time 1643530398576,
    :data {:team :white},
    :time-diff 2053101,
-   :details ""}
+   :time-correction -10
+   :details "Рома"}
   {:event :goal-scored,
    :time 1643530452010,
    :data {:team :white},
    :time-diff 2106535,
-   :details ""}
+   :time-correction -7
+   :details "Леха"}
   {:event :goal-scored,
    :time 1643531107713,
    :data {:team :yellow},
    :time-diff 2762238,
-   :details ""}
+   :details "Неизвестный солдат"}
   {:event :goal-scored,
    :time 1643531300111,
    :data {:team :yellow},
    :time-diff 2954636,
-   :details ""}
+   :details "Андрей"}
   {:event :goal-scored,
    :time 1643531846614,
    :data {:team :white},
    :time-diff 3501139,
-   :details ""}
+   :details "Вовандиньо"}
   {:event :goal-scored,
    :time 1643532009503,
    :data {:team :white},
    :time-diff 3664028,
-   :details ""}
+   :details "Рома"}
   {:event :goal-scored,
    :time 1643532496115,
    :data {:team :white},
    :time-diff 4150640,
-   :details ""}
+   :time-correction -273
+   :details "Рома"}
   {:event :goal-scored,
    :time 1643532497654,
    :data {:team :yellow},
    :time-diff 4152179,
-   :details ""}
+   :time-correction -185
+   :details "Неизвестный солдат"}
   {:event :goal-scored,
    :time 1643532500087,
    :data {:team :white},
    :time-diff 4154612,
-   :details ""}
+   :time-correction -150,
+   :details "Илья"}
   {:event :goal-scored,
    :time 1643533011633,
    :data {:team :red},
    :time-diff 4666158,
-   :details ""}
+   :details "Саша"}
   {:event :goal-scored,
    :time 1643533155233,
    :data {:team :yellow},
    :time-diff 4809758,
-   :details ""}
+   :details "Неизвестный солдат"}
   {:event :goal-scored,
    :time 1643533204813,
    :data {:team :yellow},
    :time-diff 4859338,
-   :details ""}
+   :details "Тарас"}
   {:event :goal-scored,
    :time 1643533949008,
    :data {:team :white},
    :time-diff 5603533,
-   :details ""}
+   :details "Автогол Красные Сергей"}
   {:event :goal-scored,
    :time 1643534064124,
    :data {:team :white},
    :time-diff 5718649,
-   :details ""}
+   :details "Илья"}
   {:event :goal-scored,
    :time 1643534179202,
    :data {:team :yellow},
    :time-diff 5833727,
-   :details ""}
+   :time-correction -56,
+   :details "Андрей"}
   {:event :goal-scored,
    :time 1643534300916,
    :data {:team :white},
    :time-diff 5955441,
-   :details ""}
+   :details "Жора"}
   {:event :goal-scored,
    :time 1643534478009,
    :data {:team :white},
    :time-diff 6132534,
-   :details ""}
+   :details "Вовандиньо"}
   {:event :goal-scored,
    :time 1643534783857,
    :data {:team :red},
    :time-diff 6438382,
-   :details ""}
+   :time-correction -9
+   :details "Сергей"}
   {:event :goal-scored,
    :time 1643534963946,
    :data {:team :white},
    :time-diff 6618471,
-   :details ""}),
+   :time-correction -28,
+   :details "Рома"}),
  :results
  {:yellow {:p 12, :w 2, :d 6, :l 3, :ga 8, :gf 8, :gd 0},
   :red {:p 7, :w 1, :d 4, :l 6, :ga 14, :gf 5, :gd -9},
