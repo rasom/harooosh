@@ -11,3 +11,5 @@ pom.xml
 .shadow-cljs
 yarn.lock
 public
+.clj-kondo
+.lsp

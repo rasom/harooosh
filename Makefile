@@ -10,3 +10,6 @@ build-release:
 	rm -rf docs ;\
 	cp -R public docs ;\
 	cp CNAME docs/CNAME
+
+build-site:
+	clj -X harooosh.site/generate-site-cmd
