@@ -32,6 +32,10 @@
         (take 1 n)
         n))]))
 
+(defn match-day-link [season file content]
+  [:a {:href (str season "/" file ".html")}
+   content])
+
 (defn dd-mm-year [timestamp]
   (let [f (java.text.SimpleDateFormat. "dd.MM.yyyy")
         date (java.util.Date. timestamp)]

@@ -5,6 +5,7 @@
    [harooosh.prepared-data :as prepared-data]
    [harooosh.round-page :as round-page]
    [harooosh.season-data :as season-data]
+   [harooosh.season-extra :as season-extra]
    [hiccup.core :as hiccup]))
 
 (def season-table-rows
@@ -60,10 +61,6 @@
           (sort-by (fn [[_ {:keys [p]}]] p) > results)]
       [:span.text-nowrap (common/get-team t) " " [:span.fw-bold p]]))])
 
-(defn match-day-link [season file content]
-  [:a {:href (str season "/" file ".html")}
-   content])
-
 (defn match-days-table [season all-days]
   [:table.table.table-bordered.text-center
    [:thead
@@ -79,286 +76,9 @@
                   [(inc idx) data]))
                (sort-by (fn [[_ {:keys [started-at]}]] started-at) >))]
       [:tr
-       [:td (match-day-link season name (str idx " Тур"))]
+       [:td (common/match-day-link season name (str idx " Тур"))]
        [:td (common/dd-mm-year started-at)]
        [:td (result-summary data)]])]])
-
-(defn count-draws [matches]
-  (reduce
-   (fn [acc {:keys [team1-score team2-score]}]
-     (if (= team1-score team2-score)
-       (inc acc)
-       acc))
-   0
-   matches))
-
-(defn count-matches [data]
-  (reduce
-   (fn [acc {:keys [data]}]
-     (let [matches (get data :matches)]
-       (-> acc
-           (update :total + (count matches))
-           (update :draws + (count-draws matches)))))
-   {:total 0
-    :draws 0}
-   data))
-
-(defn round-float
-  ([n]
-   (round-float n 2))
-  ([n precision]
-   (let [base (int (java.lang.Math/pow 10 precision))]
-     (float (/ (java.lang.Math/round (* base (float n))) base)))))
-
-(defn percentage [a b]
-  (round-float (* 100 (/ a b))))
-
-(defn get-total-scored [{:keys [results]}]
-  (reduce
-   (fn [acc [_ {:keys [ga]}]]
-     (+ acc ga))
-   0
-   results))
-
-(defn check-for-best-result [{:keys [best-result] :as acc} total-scored day]
-  (cond (> best-result total-scored)
-        acc
-
-        (= best-result total-scored)
-        (update acc :best-days conj day)
-
-        :else
-        (assoc acc
-               :best-result total-scored
-               :best-days [day])))
-
-(defn check-for-worst-result [{:keys [worst-result] :as acc} total-scored day]
-  (cond (> total-scored worst-result)
-        acc
-
-        (= worst-result total-scored)
-        (update acc :worst-days conj day)
-
-        :else
-        (assoc acc
-               :worst-result total-scored
-               :worst-days [day])))
-
-(defn get-some-value-from-results [results comp-fn value-fn initial-value]
-  (reduce
-   (fn [{:keys [value] :as acc} [team r]]
-     (let [next-value (value-fn r)]
-       (cond (comp-fn value next-value)
-             acc
-
-             (= value next-value)
-             (update acc :teams conj team)
-
-             :else
-             {:teams [team]
-              :value next-value})))
-   {:teams []
-    :value initial-value}
-   results))
-
-(defn check-something-from-results-per-day
-  [value-key days-key comp-fn value-fn initial-value]
-  (fn [acc day]
-    (let [results       (get-in day [:data :results])
-          current-value (get acc value-key initial-value)
-          {:keys [teams value]}
-          (get-some-value-from-results results comp-fn value-fn initial-value)]
-      (cond (comp-fn current-value value)
-            acc
-
-            (= current-value value)
-            (update acc days-key conj {:teams teams
-                                       :day   day})
-
-            :else
-            (assoc acc
-                   days-key [{:teams teams
-                              :day   day}]
-                   value-key value)))))
-
-(def check-best-scorer-per-day
-  (check-something-from-results-per-day
-   :best-score :best-score-days
-   > :gf 0))
-
-(def check-worst-scorer-per-day
-  (check-something-from-results-per-day
-   :worst-score :worst-score-days
-   < :gf 1000))
-
-(def check-worst-defence-per-day
-  (check-something-from-results-per-day
-   :worst-defence :worst-defence-days
-   > :ga 0))
-
-(def check-best-defence-per-day
-  (check-something-from-results-per-day
-   :best-defence :best-defence-days
-   < :ga 1000))
-
-(def check-best-gd-per-day
-  (check-something-from-results-per-day
-   :best-gd :best-gd-days
-   > :gd 0))
-
-(def check-worst-gd-per-day
-  (check-something-from-results-per-day
-   :worst-gd :worst-gd-days
-   < :gd 1000))
-
-(def check-max-points-per-day
-  (check-something-from-results-per-day
-   :max-points :max-points-days
-   > :p 0))
-
-(def check-min-points-per-day
-  (check-something-from-results-per-day
-   :min-points :min-points-days
-   < :p 1000))
-
-(def check-max-wins-per-day
-  (check-something-from-results-per-day
-   :max-wins :max-wins-days
-   > :w 0))
-
-(def check-max-draws-per-day
-  (check-something-from-results-per-day
-   :max-draws :max-draws-days
-   > :d 0))
-
-(def check-max-defeats-per-day
-  (check-something-from-results-per-day
-   :max-defeats :max-defeats-days
-   > :l 0))
-
-(def check-min-wins-per-day
-  (check-something-from-results-per-day
-   :min-wins :min-wins-days
-   < :w 1000))
-
-(def check-min-draws-per-day
-  (check-something-from-results-per-day
-   :min-draws :min-draws-days
-   < :d 1000))
-
-(def check-min-defeats-per-day
-  (check-something-from-results-per-day
-   :min-defeats :min-defeats-days
-   < :l 1000))
-
-(defn check-results [acc day]
-  (reduce
-   (fn [acc f] (f acc day))
-   acc
-   [check-best-scorer-per-day
-    check-worst-scorer-per-day
-    check-worst-defence-per-day
-    check-best-defence-per-day
-    check-best-gd-per-day
-    check-worst-gd-per-day
-    check-max-points-per-day
-    check-min-points-per-day
-    check-max-wins-per-day
-    check-max-draws-per-day
-    check-max-defeats-per-day
-    check-min-wins-per-day
-    check-min-draws-per-day
-    check-min-defeats-per-day]))
-
-(defn get-scores-stats [data]
-  (reduce
-   (fn [acc {:keys [data] :as day}]
-     (let [total-scored (get-total-scored data)]
-       (-> acc
-           (update :all-scores conj total-scored)
-           (check-for-best-result total-scored day)
-           (check-for-worst-result total-scored day)
-           (check-results day))))
-   {:best-result        0
-    :worst-result       1000
-    :best-days          []
-    :worst-days         []
-    :all-scores         []}
-   data))
-
-(defn print-days [days]
-  (interpose
-   ","
-   (map (fn [{:keys [started-at name]}]
-          (match-day-link common/current-season name (common/dd-mm-year started-at)))
-        days)))
-
-(defn print-days-with-teams [days]
-  [:span
-   (interpose
-    "; "
-    (map
-     (fn [{:keys [teams]
-           {:keys [started-at name]} :day}]
-       [:span
-        (interpose
-         ","
-         (map common/get-team teams))
-        " "
-        (match-day-link common/current-season name
-                        (str "(" (common/dd-mm-year started-at) ")"))])
-     days))])
-
-(defn match-day-row [stats title value-description value-key days-key]
-  [:tr
-   [:td title]
-   [:td value-description ": " (get stats value-key) "; "
-    (print-days-with-teams (get stats days-key))]])
-
-(defn extra-stats-table [data aggregated-results]
-  [:table.table.table-bordered.table-striped
-   (let [total-games                           (count data)
-         {:keys [total draws]}                 (count-matches data)
-         {:keys [all-scores worst-result worst-days best-result best-days]
-          :as stats}
-         (get-scores-stats data)]
-     [:tbody
-      [:tr
-       [:td "Всего игр"]
-       [:td (str total)]]
-      [:tr
-       [:td "В среднем игр за тур"]
-       [:td (str (round-float (/ total total-games)))]]
-      [:tr
-       [:td "Всего ничьих"]
-       [:td (str draws " (" (percentage draws total) "%)")]]
-      [:tr
-       [:td "Среднее количество голов за тур"]
-       [:td (round-float (/ (apply + all-scores) total-games))]]
-      [:tr
-       [:td "Самые результативные туры"]
-       [:td (str "забитых голов: " best-result ", ")
-        (print-days best-days)]]
-      [:tr
-       [:td "Наименее результативные туры"]
-       [:td (str "забитых голов: " worst-result ", ")
-        (print-days worst-days)]]
-      (for [config
-            [["Больше всего голов за тур" "забито голов" :best-score :best-score-days]
-             ["Меньше всего голов за тур" "забито голов" :worst-score :worst-score-days]
-             ["Больше всего пропущено за тур" "пропущено голов" :worst-defence :worst-defence-days]
-             ["Меньше всего пропущено за тур" "пропущено голов" :best-defence :best-defence-days]
-             ["Лучшая разница голов за тур" "разница" :best-gd :best-gd-days]
-             ["Худшая разница голов за тур" "разница" :worst-gd :worst-gd-days]
-             ["Больше всего очков за тур" "очков" :max-points :max-points-days]
-             ["Меньше всего очков за тур" "очков" :min-points :min-points-days]
-             ["Больше всего побед за тур" "игр" :max-wins :max-wins-days]
-             ["Меньше всего побед за тур" "игр" :min-wins :min-wins-days]
-             ["Больше всего ничьих за тур" "игр" :max-draws :max-draws-days]
-             ["Меньше всего ничьих за тур" "игр" :min-draws :min-draws-days]
-             ["Больше всего поражений за тур" "игр" :max-defeats :max-defeats-days]
-             ["Меньше всего поражений за тур" "игр" :min-defeats :min-defeats-days]]]
-        (apply match-day-row stats config))])])
 
 (def team-pairs [#{:yellow :red}
                  #{:white :red}
@@ -451,7 +171,7 @@
         (match-days-table season data)]
        [:div.col-sm-6
         [:h3 "Дополнительная статистика"]
-        (extra-stats-table data aggregated-results)]
+        (season-extra/extra-stats-table data aggregated-results)]
        [:div.col-sm-6
         (let [one-to-one-data (into {} (one-to-one-stats data))]
           (for [pair (sorted-teams-pairs aggregated-results)]
