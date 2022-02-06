@@ -4,188 +4,8 @@
    [clojure.string :as string]
    [harooosh.common :as common]
    [harooosh.prepared-data :as prepared-data]
+   [harooosh.round-page :as round-page]
    [hiccup.core :as hiccup]))
-
-(defn adjust-diff
-  [diff
-   correction
-   {:keys [offset1 offset2 offset3
-           battery-change1 battery-change2]}]
-  (let [diff (if correction
-               (+ diff (* correction 1000))
-               diff)]
-    (cond (and battery-change2
-               (> diff (* 1000 battery-change2)))
-          (- diff (* 1000 offset3))
-
-          (and battery-change1
-               (> diff (* 1000 battery-change1)))
-          (- diff (* 1000 offset2))
-
-          offset1
-          (- diff (* 1000 offset1))
-
-          :else
-          diff)))
-
-(defn check-active [props page current-page]
-  (cond-> props
-    (= page current-page)
-    (assoc :aria-current true
-           :class "active")))
-
-(defn nav [page]
-  [:nav.navbar.navbar-expand-lg.navbar-light.bg-light
-   [:div.container-fluid
-    [:a.navbar-brand
-     {:href "#"}
-     "ХАРОООШ!"]
-    [:button.navbar-toggler
-     {:type           "button"
-      :data-bs-toggle "collapse"
-      :data-bs-target "#navbarNav"
-      :aria-controls  "navbarNav"
-      :aria-expanded  "false"
-      :aria-label     "Toggle navigation"}
-     [:span.navbar-toggler-icon]]
-    [:div#navbarNav.collapse.navbar-collapse
-     [:ul.navbar-nav
-      [:li.nav-item
-       [:a.nav-link
-        (check-active {:href "/"} :home page)
-        "Главная"]]
-      [:li.nav-item
-       [:a.nav-link
-        (check-active {:href "/game.html"} :stats page)
-        "Сбор статистики"]]]]]])
-
-(defn page [page-name & body]
-  [:html
-   {:lang :en}
-   [:head
-    [:meta {:charset "UTF-8"}]
-    [:meta {:name   "viewport"
-            :content "width=device-width, initial-scale=1"}]
-    [:title "harooosh"]
-    [:link
-     {:href "https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
-      :rel "stylesheet"
-      :integrity "sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
-      :crossorigin "anonymous"}]
-    [:link {:rel "stylesheet"
-            :href "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"}]
-    [:script {:src "https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-              :integrity "sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-              :crossorigin "anonymous"}]
-    [:style ".max-width {max-width: 30;}"]]
-   (vec (concat [:body (nav page-name)] body))])
-
-(defn goals-table [goals offsets]
-  [:table.table.table-striped
-   [:thead
-    [:td "Время"]
-    [:td "Команда"]
-    [:td "Детали"]]
-   [:tbody
-    (for [{:keys [time-diff time-correction data details]} goals]
-      (let [adjusted-time (adjust-diff time-diff time-correction offsets)]
-        [:tr
-         [:td [:a {:href "javascript:void(0);"
-                   :onclick (format "setCurrentTime(%d)"
-                                    (quot adjusted-time 1000))}
-               (common/to-h-min-sec adjusted-time)]]
-         [:td (common/get-team (:team data))]
-         [:td details]]))]])
-
-(defn results-table [results]
-  [:table.table.table-bordered
-   [:thead
-    (let [th :th.max-width.overflow-hidden]
-      [:tr
-       [th {:title "Команда"} "Команда"]
-       [th {:title "Очки"} "O"]
-       [th {:title "Игры"} "И"]
-       [th {:title "Выигрыши"} "В"]
-       [th {:title "Hичьи"} "Н"]
-       [th {:title "Поражения"} "П"]
-       [th {:title "Забитые"} "ЗАБ"]
-       [th {:title "Пропущенные"} "ПРО"]
-       [th {:title "Разница"} "РАЗН"]])]
-   [:tbody
-    (for [[team {:keys [p w d l gf ga gd]}] (sort-by (fn [[_ {:keys [p]}]] p) > results)]
-      ^{:keys (str team)}
-      [:tr
-       [:td (common/get-team team)]
-       [:td [:span.fw-bold (str p)]]
-       [:td (str (+ w d l))]
-       [:td (str w)]
-       [:td (str d)]
-       [:td (str l)]
-       [:td (str gf)]
-       [:td (str ga)]
-       [:td (str gd)]])]])
-
-(defn matches-table [matches]
-  [:table.table.table-striped.text-center
-   [:tbody
-    (for [{:keys [id team1 team2 team1-score team2-score]} matches]
-      [:tr
-       [:td (str "#" (inc id))]
-       [:td {:style {:background-color team1}}
-        (common/get-team team1)]
-       [:td [:p.text-nowrap
-             (str team1-score " : " team2-score)]]
-       [:td {:style {:background-color team2}}
-        (common/get-team team2)]])]])
-
-(defn game-html
-  [{:keys [youtube-id goals results matches started-at offsets]}]
-  (page
-   :match-day
-   [:div.container-fluid
-    [:div.row
-     [:div.col-sm-12.overflow-auto
-      [:h3 "Результат " (common/dd-mm-year started-at)]
-      (results-table results)]
-     [:div.col-sm-7 [:div#player [:h1 "Тут будет видео!"]]]
-     [:div.col-sm-5.overflow-auto
-      {:style "max-height: 400;"}
-      (goals-table goals offsets)]
-     [:div.col-sm-6
-      [:h3 "Матчи"]
-      (matches-table matches)]]
-    (when youtube-id
-      [:script
-       (str
-        "var tag = document.createElement('script');
-      tag.src = \"https://www.youtube.com/iframe_api\";
-      var firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-      var player;
-      function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player', {
-          videoId:'" youtube-id "',
-          width: '100%',
-          height: 400
-        });
-      }
-      function setCurrentTime(time) {
-        player.seekTo(time);
-      }")])]))
-
-(defn generate-game-html [{:keys [file]}]
-  (let [data (common/data (str "prepared_data/" common/current-season "/" file))
-        html-edn (game-html data)
-        html (hiccup/html html-edn)
-        [file-name] (string/split file #"\.")]
-    (spit (str "public/" common/current-season "/" file-name ".html") html)))
-
-(defn hms-msecs [h m s]
-  (*
-   (+ (* h 60 60)
-      (* m 60)
-      s)
-   1000))
 
 (defn season-data-files [season]
   (->> (str "prepared_data/" season)
@@ -538,8 +358,8 @@
 (defn print-days [days]
   (interpose
    ","
-   (map (fn [{:keys [started-at file]}]
-          (match-day-link common/current-season file (common/dd-mm-year started-at)))
+   (map (fn [{:keys [started-at name]}]
+          (match-day-link common/current-season name (common/dd-mm-year started-at)))
         days)))
 
 (defn print-days-with-teams [days]
@@ -548,13 +368,13 @@
     "; "
     (map
      (fn [{:keys [teams]
-           {:keys [started-at file]} :day}]
+           {:keys [started-at name]} :day}]
        [:span
         (interpose
          ","
          (map common/get-team teams))
         " "
-        (match-day-link common/current-season file
+        (match-day-link common/current-season name
                         (str "(" (common/dd-mm-year started-at) ")"))])
      days))])
 
@@ -687,7 +507,7 @@
      [t2 t3]]))
 
 (defn season-page-html [season data]
-  (page
+  (common/page
    :home
    [:div.container-fluid
     (let [aggregated-results (aggregate-results data)]
@@ -721,17 +541,17 @@
 
 (defn update-season [season]
   (doseq [file (season-data-files season)]
-    (generate-game-html {:file (.getName file)})))
+    (round-page/generate-round-html {:file (.getName file)})))
 
 (defn stats-page []
-  (page
+  (common/page
    :stats
    [:div#harooosh-frame]
    [:script {:src "js/compiled/common.js"}]
    [:script {:src "js/compiled/game.js"}]))
 
 (defn stats-list-page []
-  (page
+  (common/page
    :stats-list
    [:div#harooosh-frame]
    [:script {:src "js/compiled/common.js"}]
@@ -760,7 +580,7 @@
 (comment
   (generate-site-cmd nil)
 
-  (generate-game-html {:file "16_01.edn"})
+  (generate-round-html {:file "16_01.edn"})
 
   "01 4 51"
   (stats-page)
@@ -771,7 +591,7 @@
 
   (update-season 2022)
 
-  (game-html :1)
+  (round-html :1)
   (prepared-data/prepare-data-cmd  {:file "16_01.edn"})
 
   "https://www.youtube.com/embed/wglacyQqOf4"
