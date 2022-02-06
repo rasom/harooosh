@@ -1,4 +1,5 @@
-(ns harooosh.common)
+(ns harooosh.common
+  (:require [clojure.edn :as edn]))
 
 (def current-season 2022)
 
@@ -44,3 +45,8 @@
         mins    (quot (- ms (* hs h-len)) min-len)
         seconds (quot (- ms (* mins min-len) (* hs h-len)) sec-len)]
     (format "%02d:%02d:%02d" hs mins seconds)))
+
+(defn data [file]
+  (->
+   (slurp file)
+   (edn/read-string)))
