@@ -1,54 +1,11 @@
 (ns harooosh.site
-  (:require [clojure.edn :as edn]
-            [clojure.pprint :as pp]
-            [clojure.java.io :as io]
-            [clojure.string :as string]
-            [hiccup.core :as hiccup]))
-
-(def current-season 2022)
-
-(def teams
-  {:white  "Белые"
-   :red    "Красные"
-   :yellow "Желтые"})
-
-(def team-icon
-  {:white  "bi-circle"
-   :red    "bi-circle-fill"
-   :yellow "bi-circle-fill"})
-
-(def team-style
-  {:white  nil
-   :red    "color: red;"
-   :yellow "color: gold"})
-
-(defn get-team
-  ([team]
-   (get-team team :max))
-  ([team type]
-   [:span.text-nowrap
-    [:i.bi
-     {:class (get team-icon team)
-      :style (get team-style team)}]
-    " "
-    (let [n (get teams team)]
-      (if (= :min type)
-        (take 1 n)
-        n))]))
-
-(defn dd-mm-year [timestamp]
-  (let [f (java.text.SimpleDateFormat. "dd.MM.yyyy")
-        date (java.util.Date. timestamp)]
-    (.format f date)))
-
-(defn to-h-min-sec [ms]
-  (let [sec-len 1000
-        min-len (* 60 sec-len)
-        h-len   (* 60 min-len)
-        hs      (quot ms h-len)
-        mins    (quot (- ms (* hs h-len)) min-len)
-        seconds (quot (- ms (* mins min-len) (* hs h-len)) sec-len)]
-    (format "%02d:%02d:%02d" hs mins seconds)))
+  (:require
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.pprint :as pp]
+   [clojure.string :as string]
+   [harooosh.common :as common]
+   [hiccup.core :as hiccup]))
 
 (defn data [file]
   (->
@@ -127,7 +84,7 @@
    :matches      (prepare-matches data)})
 
 (defn prepare-data-cmd [{:keys [file season]
-                         :or {season current-season}}]
+                         :or {season common/current-season}}]
   (let [raw-data (data (str "raw_data/" season "/" file))
         prepared-data (prepare-data raw-data)]
     (spit
@@ -199,8 +156,8 @@
          [:td [:a {:href "javascript:void(0);"
                    :onclick (format "setCurrentTime(%d)"
                                     (quot adjusted-time 1000))}
-               (to-h-min-sec adjusted-time)]]
-         [:td (get-team (:team data))]
+               (common/to-h-min-sec adjusted-time)]]
+         [:td (common/get-team (:team data))]
          [:td details]]))]])
 
 (defn results-table [results]
@@ -221,7 +178,7 @@
     (for [[team {:keys [p w d l gf ga gd]}] (sort-by (fn [[_ {:keys [p]}]] p) > results)]
       ^{:keys (str team)}
       [:tr
-       [:td (get-team team)]
+       [:td (common/get-team team)]
        [:td [:span.fw-bold (str p)]]
        [:td (str (+ w d l))]
        [:td (str w)]
@@ -238,11 +195,11 @@
       [:tr
        [:td (str "#" (inc id))]
        [:td {:style {:background-color team1}}
-        (get-team team1)]
+        (common/get-team team1)]
        [:td [:p.text-nowrap
              (str team1-score " : " team2-score)]]
        [:td {:style {:background-color team2}}
-        (get-team team2)]])]])
+        (common/get-team team2)]])]])
 
 (defn game-html
   [{:keys [youtube-id goals results matches started-at offsets]}]
@@ -251,7 +208,7 @@
    [:div.container-fluid
     [:div.row
      [:div.col-sm-12.overflow-auto
-      [:h3 "Результат " (dd-mm-year started-at)]
+      [:h3 "Результат " (common/dd-mm-year started-at)]
       (results-table results)]
      [:div.col-sm-7 [:div#player [:h1 "Тут будет видео!"]]]
      [:div.col-sm-5.overflow-auto
@@ -280,11 +237,11 @@
       }")])]))
 
 (defn generate-game-html [{:keys [file]}]
-  (let [data (data (str "prepared_data/" current-season "/" file))
+  (let [data (data (str "prepared_data/" common/current-season "/" file))
         html-edn (game-html data)
         html (hiccup/html html-edn)
         [file-name] (string/split file #"\.")]
-    (spit (str "public/" current-season "/" file-name ".html") html)))
+    (spit (str "public/" common/current-season "/" file-name ".html") html)))
 
 (defn hms-msecs [h m s]
   (*
@@ -395,7 +352,7 @@
        [:tr
         [:th]
         (for [team teams-keys]
-          [:th (get-team team :min)])]]
+          [:th (common/get-team team :min)])]]
       [:tbody
        (for [[k {:keys [title f value-wrapper]
                  :or {value-wrapper str
@@ -413,7 +370,7 @@
     ", "
     (for [[t {:keys [p]}]
           (sort-by (fn [[_ {:keys [p]}]] p) > results)]
-      [:span.text-nowrap (get-team t) " " [:span.fw-bold p]]))])
+      [:span.text-nowrap (common/get-team t) " " [:span.fw-bold p]]))])
 
 (defn match-day-link [season file content]
   [:a {:href (str season "/" file ".html")}
@@ -435,7 +392,7 @@
                (sort-by (fn [[_ {:keys [started-at]}]] started-at) >))]
       [:tr
        [:td (match-day-link season name (str idx " Тур"))]
-       [:td (dd-mm-year started-at)]
+       [:td (common/dd-mm-year started-at)]
        [:td (result-summary data)]])]])
 
 (defn count-draws [matches]
@@ -645,7 +602,7 @@
   (interpose
    ","
    (map (fn [{:keys [started-at file]}]
-          (match-day-link current-season file (dd-mm-year started-at)))
+          (match-day-link common/current-season file (common/dd-mm-year started-at)))
         days)))
 
 (defn print-days-with-teams [days]
@@ -658,10 +615,10 @@
        [:span
         (interpose
          ","
-         (map get-team teams))
+         (map common/get-team teams))
         " "
-        (match-day-link current-season file
-                        (str "(" (dd-mm-year started-at) ")"))])
+        (match-day-link common/current-season file
+                        (str "(" (common/dd-mm-year started-at) ")"))])
      days))])
 
 (defn match-day-row [stats title value-description value-key days-key]
@@ -777,7 +734,7 @@
 
 (defn one-to-one-pair-header [pair stats]
   (let [[t1 t2] (vec pair)]
-    [:h3 (get-team t1) " vs " (get-team t2)
+    [:h3 (common/get-team t1) " vs " (common/get-team t2)
      (let [games  (apply +
                          (-> stats
                              first
@@ -820,7 +777,7 @@
     (season-page-html season data)))
 
 (defn generate-season-page [season]
-  (spit (if (= season current-season)
+  (spit (if (= season common/current-season)
           (str "public/index.html")
           (str "public/" season ".html"))
         (hiccup/html (season-page season))))
@@ -854,14 +811,14 @@
 ;;(generate-season-page 2022)
 
 (defn ensure-seson-dir-exists []
-  (io/make-parents (str "public/" current-season "/index.html")))
+  (io/make-parents (str "public/" common/current-season "/index.html")))
 
 (defn generate-site-cmd [_]
   (ensure-seson-dir-exists)
   (generate-stats-page)
   (generate-stats-list-page)
-  (generate-season-page current-season)
-  (update-season current-season))
+  (generate-season-page common/current-season)
+  (update-season common/current-season))
 
 (comment
   (generate-site-cmd nil)
@@ -882,7 +839,7 @@
 
   "https://www.youtube.com/embed/wglacyQqOf4"
 
-  (dd-mm-year 1640504588368)
+  (common/dd-mm-year 1640504588368)
 
   (hms-msecs 0 55 31)
 
