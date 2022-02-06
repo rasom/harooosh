@@ -13,3 +13,6 @@ build-release:
 
 build-site:
 	clj -X harooosh.site/generate-site-cmd
+
+watch-site:
+	watchman-make -p 'src/harooosh/*.clj' -t build-site
