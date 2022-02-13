@@ -56,6 +56,7 @@
 (comment
   (generate-site-cmd nil)
 
+  ()
   (generate-round-html {:file "16_01.edn"})
 
   "01 4 51"
@@ -68,7 +69,7 @@
   (update-season 2022)
 
   (round-html :1)
-  (prepared-data/prepare-data-cmd  {:file "16_01.edn"})
+  (prepared-data/prepare-data-cmd  {:file "13_02.edn"})
 
   "https://www.youtube.com/embed/wglacyQqOf4"
 
